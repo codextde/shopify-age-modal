@@ -103,6 +103,29 @@ export async function createServer(
     })
   );
 
+  app.get("/api/script/load", async (req, res) => {
+    const session = await Shopify.Utils.loadCurrentSession(
+      req,
+      res,
+      app.get("use-online-tokens")
+    );
+    let status = 200;
+    let error = null;
+    let data;
+
+    try {
+      if (session) {
+        data = await ScriptTag.all({
+          session: session,
+        });
+      }
+    } catch (e) {
+      status = 500;
+      error = e.message;
+    }
+    res.status(status).send(data);
+  });
+
   app.get("/api/script/create", async (req, res) => {
     const session = await Shopify.Utils.loadCurrentSession(
       req,
@@ -121,7 +144,31 @@ export async function createServer(
           update: true,
         });
       }
-     
+    } catch (e) {
+      status = 500;
+      error = e.message;
+    }
+    res.status(status).send({ success: status === 200, error });
+  });
+
+  app.get("/api/script/delete", async (req, res) => {
+    const session = await Shopify.Utils.loadCurrentSession(
+      req,
+      res,
+      app.get("use-online-tokens")
+    );
+    let status = 200;
+    let error = null;
+
+    try {
+      if (session && req.query.id) {
+        const id = +req.query.id;
+        await ScriptTag.delete({
+          session: session,
+          id: id
+        });
+        console.log('deleted', id)
+      }
     } catch (e) {
       status = 500;
       error = e.message;

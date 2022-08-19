@@ -1,17 +1,16 @@
-import { useState } from "react";
-import {
-  Card,
-  Heading,
-  TextContainer,
-  DisplayText,
-  TextStyle,
-} from "@shopify/polaris";
 import { Toast } from "@shopify/app-bridge-react";
+import {
+    Card,
+    Heading,
+    TextContainer
+} from "@shopify/polaris";
+import { useState } from "react";
+
 import { useAppQuery, useAuthenticatedFetch } from "../hooks";
 
-export function ProductsCard() {
+export function LoadScriptTag() {
   const emptyToastProps = { content: null };
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [toastProps, setToastProps] = useState(emptyToastProps);
   const fetch = useAuthenticatedFetch();
 
@@ -21,7 +20,7 @@ export function ProductsCard() {
     isLoading: isLoadingCount,
     isRefetching: isRefetchingCount,
   } = useAppQuery({
-    url: "/api/products/count",
+    url: "/api/script/load",
     reactQueryOptions: {
       onSuccess: () => {
         setIsLoading(false);
@@ -29,17 +28,18 @@ export function ProductsCard() {
     },
   });
 
-  const toastMarkup = toastProps.content && !isRefetchingCount && (
+
+  const toastMarkup = toastProps.content && (
     <Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
   );
-
-  const handlePopulate = async () => {
+  const deleteTag = async (id) => {
     setIsLoading(true);
-    const response = await fetch("/api/script/create");
+    const response = await fetch("/api/script/delete?id=" + id);
 
     if (response.ok) {
-      
-      setToastProps({ content: "Script Tag Installed" });
+      refetchProductCount();
+      setToastProps({ content: "deleted" });
+      setIsLoading(false);
     } else {
       setIsLoading(false);
       setToastProps({
@@ -53,17 +53,25 @@ export function ProductsCard() {
     <>
       {toastMarkup}
       <Card
-        title="Product Counter"
         sectioned
         primaryFooterAction={{
-          content: "Add",
-          onAction: handlePopulate,
+          content: "Load",
+          onAction: refetchProductCount,
           loading: isLoading,
         }}
       >
         <TextContainer spacing="loose">
           <Heading element="h4">
-            Add Script to Page
+            1. Here are your added Scripts
+
+            {data?.map((item) => {
+              return (
+                <div key="{item}">
+                  <p>{item.id}</p>
+                  <button onClick={() => deleteTag(item.id)}>Delete</button>
+                </div>
+              );
+            })}
           </Heading>
         </TextContainer>
       </Card>

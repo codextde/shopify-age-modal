@@ -2,6 +2,8 @@ import { TitleBar } from "@shopify/app-bridge-react";
 import {
   Card, Heading, Layout, Page, Stack, TextContainer
 } from "@shopify/polaris";
+import {CreateScriptTag} from "../components/CreateScriptTag";
+import {LoadScriptTag} from "../components/LoadScriptTag";
 
 
 
@@ -20,12 +22,15 @@ export default function HomePage() {
             >
               <Stack.Item fill>
                 <TextContainer spacing="loose">
-
                   <Heading>This Plugin will show a Age 18 German Modal 🎉</Heading>
                 </TextContainer>
+                
               </Stack.Item>
             </Stack>
           </Card>
+          <CreateScriptTag />
+          <LoadScriptTag />
+          
         </Layout.Section>
         
       </Layout>
