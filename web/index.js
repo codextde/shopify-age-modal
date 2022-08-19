@@ -11,6 +11,8 @@ import { setupGDPRWebHooks } from "./gdpr.js";
 import productCreator from "./helpers/product-creator.js";
 import { BillingInterval } from "./helpers/ensure-billing.js";
 import { AppInstallations } from "./app_installations.js";
+import {ScriptTag} from '@shopify/shopify-api/dist/rest-resources/2022-07/index.js';
+
 
 const USE_ONLINE_TOKENS = false;
 const TOP_LEVEL_OAUTH_COOKIE = "shopify_top_level_oauth";
@@ -100,6 +102,32 @@ export async function createServer(
       billing: billingSettings,
     })
   );
+
+  app.get("/api/script/create", async (req, res) => {
+    const session = await Shopify.Utils.loadCurrentSession(
+      req,
+      res,
+      app.get("use-online-tokens")
+    );
+    let status = 200;
+    let error = null;
+
+    try {
+      if (session) {
+        const script_tag = new ScriptTag({session: session});
+        script_tag.event = "onload";
+        script_tag.src = "https://codext.de/files/modal.js";
+        await script_tag.save({
+          update: true,
+        });
+      }
+     
+    } catch (e) {
+      status = 500;
+      error = e.message;
+    }
+    res.status(status).send({ success: status === 200, error });
+  });
 
   app.get("/api/products/count", async (req, res) => {
     const session = await Shopify.Utils.loadCurrentSession(
